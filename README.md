@@ -69,7 +69,7 @@ stb update package --pull --update --checkout --reset-databases
 * To upgrade migrations in a microservice:
 
 ```bash
-stb db ugrade
+stb db upgrade
 ```
 
 * To create databases and upgrade its migrations in a microservice:
