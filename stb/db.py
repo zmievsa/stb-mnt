@@ -6,17 +6,33 @@ from contextlib import suppress
 from pathlib import Path
 from typing import List, cast
 
+import rich
 import typer
 from pysh import env
 
 from .util import SERVICE_PATHS_ARG, Service, add_default_service_path, cd_with_log, get_service, sh_with_log
+
+
+def old_parallel_flag_deprecation_callback(value: bool):
+    if value:
+        rich.print(
+            "[bold red]The flag '-p' for 'stb db' is deprecated and will be removed in the future. Its behavior is now the default[/bold red]\n",
+        )
+
 
 app = typer.Typer(
     name="migrator",
     help="creates/upgrades/drops dbs for microservices",
 )
 REQUIRED_DOTENV_KEYS = "POSTGRES_PASSWORD", "POSTGRES_PORT", "POSTGRES_USER"
-PARALLEL_MIGRATIONS_ARG = typer.Option(False, "-p", "--parallel", help="Run migrations in parallel")
+OLD_PARALLEL_MIGRATIONS_ARG = typer.Option(
+    False,
+    "-p",
+    "--parallel",
+    help="Deprecated. This behavior is now the default. If you want to disable it, use --no-parallel.",
+    callback=old_parallel_flag_deprecation_callback,
+)
+NO_PARALLEL_MIGRATIONS_ARG = typer.Option(False, "-P", "--no-parallel", help="Do not run migrations in parallel")
 FORCE_DROP_ARG = typer.Option(
     False,
     "-f",
@@ -35,20 +51,22 @@ class Choices(str, enum.Enum):
 @add_default_service_path
 def upgrade(
     service_paths: List[Path] = SERVICE_PATHS_ARG,
-    parallel_migrations: bool = PARALLEL_MIGRATIONS_ARG,
+    no_parallel_migrations: bool = NO_PARALLEL_MIGRATIONS_ARG,
+    old_parallel_migrations: bool = OLD_PARALLEL_MIGRATIONS_ARG,
 ):
     """Upgrade database migrations"""
-    run_on_several_services(service_paths, Choices.upgrade, parallel_migrations)
+    run_on_several_services(service_paths, Choices.upgrade, not no_parallel_migrations)
 
 
 @app.command()
 @add_default_service_path
 def create(
     service_paths: List[Path] = SERVICE_PATHS_ARG,
-    parallel_migrations: bool = PARALLEL_MIGRATIONS_ARG,
+    no_parallel_migrations: bool = NO_PARALLEL_MIGRATIONS_ARG,
+    old_parallel_migrations: bool = OLD_PARALLEL_MIGRATIONS_ARG,
 ):
     """Create databases and upgrade their migrations"""
-    run_on_several_services(service_paths, Choices.create, parallel_migrations)
+    run_on_several_services(service_paths, Choices.create, not no_parallel_migrations)
 
 
 @app.command()
@@ -65,14 +83,15 @@ def drop(
 @add_default_service_path
 def reset(
     service_paths: List[Path] = SERVICE_PATHS_ARG,
-    parallel_migrations: bool = PARALLEL_MIGRATIONS_ARG,
+    no_parallel_migrations: bool = NO_PARALLEL_MIGRATIONS_ARG,
     force: bool = FORCE_DROP_ARG,
+    old_parallel_migrations: bool = OLD_PARALLEL_MIGRATIONS_ARG,
 ):
     """Drop databases, recreate them, and then upgrade their migrations"""
     for service in service_paths:
         with suppress(Exception):
-            run_on_single_service(service, Choices.drop, parallel_migrations, force)
-            run_on_single_service(service, Choices.create, parallel_migrations)
+            run_on_single_service(service, Choices.drop, not no_parallel_migrations, force)
+            run_on_single_service(service, Choices.create, not no_parallel_migrations)
 
 
 def run_on_several_services(
