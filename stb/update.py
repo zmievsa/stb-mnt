@@ -2,6 +2,7 @@ from contextlib import suppress
 from pathlib import Path
 from typing import List
 
+import rich
 import typer
 from pysh import sh
 
@@ -17,9 +18,31 @@ from .util import (
     sh_with_log,
 )
 
+
+def old_reset_databases_flag_deprecation_callback(value: bool) -> None:
+    if value:
+        rich.print(
+            "[bold red]The flag '-d' for 'stb update package' is deprecated. It ran 'stb db reset -fp' as well but now this is the default behavior. If you want to disable it, use --no-reset-databases.[/bold red]\n"
+        )
+
+
 app = typer.Typer(
     name="update",
     help="Updates your services' configurations, dependencies, submodules, and ports without losing any part of your environment or configurations",
+)
+
+OLD_RESET_DATABASES_ARG = typer.Option(
+    False,
+    "-d",
+    "--reset-databases",
+    help="This option is deprecated. It ran 'stb db reset -fp' as well but now this is the default behavior. If you want to disable it, use --no-reset-databases.",
+    callback=old_reset_databases_flag_deprecation_callback,
+)
+NO_RESET_DATABASES_ARG = typer.Option(
+    False,
+    "-D",
+    "--no-reset-databases",
+    help="Do not run 'stb db reset -fp' after updating the services",
 )
 
 
@@ -93,12 +116,8 @@ def package(
         "--checkout",
         help="Stash the current changes and checkout to master",
     ),
-    reset_databases: bool = typer.Option(
-        False,
-        "-d",
-        "--reset-databases",
-        help="Run 'stb db reset -fp' as well",
-    ),
+    old_reset_databases: bool = OLD_RESET_DATABASES_ARG,
+    no_reset_databases: bool = NO_RESET_DATABASES_ARG,
 ):
     """Install the dependencies from poetry.lock file, update submodules, optionally update dependencies, and optionally reset databases"""
     branches_where_stashes_happened = []
@@ -124,7 +143,7 @@ def package(
                 env([service.dir])
             if update_ports:
                 ports([service.dir])
-            if reset_databases:
+            if not no_reset_databases:
                 with suppress(LookupError):
                     stb_db(service.dir, Choices.drop, force_drop=True)
                     stb_db(service.dir, Choices.create, parallel_migrations=True)
