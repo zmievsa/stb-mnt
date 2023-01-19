@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "stb-mnt"
 packages = [{ include = "stb" }]
-version = "2.1.0"
+version = "3.0.0"
 description = "A universal tool for local microservice management."
 readme = "README.md"
 authors = ["Stanislav Zmiev <szmiev2000@gmail.com>"]
@@ -22,6 +22,7 @@ python-dotenv = "^0.21.0"
 typing-extensions = "^4.3.0"
 tomlkit = "^0.11.6"
 platformdirs = "^2.6.2"
+requests = "^2.28.2"
 
 [tool.poetry.dev-dependencies]
 black = "*"
