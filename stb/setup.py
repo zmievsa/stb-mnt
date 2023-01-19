@@ -13,7 +13,7 @@ from .util import cd_with_log, clean_python_version, parse_python_version, sh_wi
 PYENV_INSTALLED = which("pyenv")
 
 
-def setup_services(services: List[str]) -> None:
+def setup_services(services: List[str], skip_existing: bool) -> None:
     if not "git_url" in CONFIG:
         raise typer.BadParameter("You must set the git_url in the config file before you can use this command")
     if not PYENV_INSTALLED:
@@ -22,7 +22,7 @@ def setup_services(services: List[str]) -> None:
         clean_python_version(" \t~^*") for v in sh("pyenv install --list", capture=True).stdout.split("\n") if v.strip()
     ]
 
-    repositories_to_clone = get_repositories_to_clone(services)
+    repositories_to_clone = get_repositories_to_clone(services, skip_existing)
 
     for name, link in repositories_to_clone:
         setup_service(name, link, installable_pyenv_versions)
@@ -42,7 +42,7 @@ def setup_service(repo_name: str, git_link: str, installable_pyenv_versions: Lis
                         setup_pyenv_locally(python_version, installable_pyenv_versions)
                     else:
                         sh_with_log(f"poetry env use {python_version}")
-                # sh_with_log("poetry install")
+                sh_with_log("poetry install")
             update.env([Path()])
             update.ports([Path()])
     else:
@@ -90,7 +90,7 @@ def get_usable_pyenv_version(current: str, available: Sequence[str], install: bo
             return version
 
 
-def get_repositories_to_clone(repo_names: List[str]) -> List[Tuple[str, str]]:
+def get_repositories_to_clone(repo_names: List[str], skip_existing: bool) -> List[Tuple[str, str]]:
     """Expands gitlab repo names to include all repos if the name is a group or a namespace"""
     expanded_repo_names = []
 
@@ -117,7 +117,7 @@ def get_repositories_to_clone(repo_names: List[str]) -> List[Tuple[str, str]]:
                 non_repeating_projects = []
                 for project in projects:
                     if Path(project[0]).exists():
-                        yes = typer.confirm(
+                        yes = skip_existing or typer.confirm(
                             f"Found project {project[0]} but a folder with the same name already exists. You should use `stb update` for it instead. Would you like to skip it?",
                         )
                         if not yes:

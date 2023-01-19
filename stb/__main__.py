@@ -55,11 +55,12 @@ try:
     def setup_(
         services: List[str] = typer.Argument(
             ...,
-            help="Names of services to setup. For example, use 'backend/oatmeal' to setup oatmeal service in the backend namespace",
+            help="Names of services to setup. For example, use 'my_company/backend/oatmeal' to setup oatmeal service in the backend namespace",
         ),
+        skip_existing: bool = typer.Option(True, help="Automatically skip existing services when setting up"),
     ) -> None:
         """Does the initial localhost setup of microservices. Downloads, configures .env, inits submodules, installs the correct pyenv environment, creates the correct poetry environment, and installs dependencies"""
-        return setup.setup_services(services)
+        return setup.setup_services(services, skip_existing)
 
 except ImportError:
     pass
