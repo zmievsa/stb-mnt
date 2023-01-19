@@ -139,7 +139,7 @@ stb run service1 service2
 * To set a git url for cloning:
 
 ```bash
-stb config set git_url git@github.com:mycompany
+stb config set git_url git@gitlab.my_company.com
 ```
 
 ### How directories are selected for update/db
