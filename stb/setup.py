@@ -1,19 +1,20 @@
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
+import requests
 import tomlkit as toml
 import typer
 from pysh import sh, which
 
 from . import update
-from .config import CONFIG
+from .config import CONFIG, get_gitlab_api_url
 from .util import cd_with_log, clean_python_version, parse_python_version, sh_with_log
 
 PYENV_INSTALLED = which("pyenv")
 
 
-def setup_services(services: List[str], no_clone: bool) -> None:
-    if not "git_url" in CONFIG and not no_clone:
+def setup_services(services: List[str]) -> None:
+    if not "git_url" in CONFIG:
         raise typer.BadParameter("You must set the git_url in the config file before you can use this command")
     if not PYENV_INSTALLED:
         typer.echo("Failed to locate pyenv. Will use the system python version(s) instead")
@@ -23,18 +24,13 @@ def setup_services(services: List[str], no_clone: bool) -> None:
 
     repositories_to_clone = get_repositories_to_clone(services)
 
-    for name, link in repositories_to_clone.items():
-        setup_service(name, link, installable_pyenv_versions, no_clone)
+    for name, link in repositories_to_clone:
+        setup_service(name, link, installable_pyenv_versions)
 
 
-def setup_service(service_name: str, git_link: str, installable_pyenv_versions: List[str], no_clone: bool):
-    typer.echo(f"Setting up {service_name}")
-
-    repo_name = service_name.rsplit("/")[-1]
-    if no_clone:
-        success = Path(repo_name).exists()
-    else:
-        success = clone_repo(repo_name, git_link)
+def setup_service(repo_name: str, git_link: str, installable_pyenv_versions: List[str]):
+    typer.echo(f"Setting up {repo_name}")
+    success = clone_repo(git_link)
 
     if success:
         with cd_with_log(repo_name):
@@ -46,19 +42,15 @@ def setup_service(service_name: str, git_link: str, installable_pyenv_versions: 
                         setup_pyenv_locally(python_version, installable_pyenv_versions)
                     else:
                         sh_with_log(f"poetry env use {python_version}")
-                sh_with_log("poetry install")
+                # sh_with_log("poetry install")
             update.env([Path()])
             update.ports([Path()])
     else:
         raise FileNotFoundError(f"Failed to enter the directory '{repo_name}'")
 
 
-def clone_repo(repo_name: str, git_link: str) -> bool:
-    if not Path(repo_name, ".git").exists():
-        return bool(sh_with_log(f"git clone {git_link}"))
-    else:
-        typer.echo(f"{repo_name} has already been cloned. Either rename the existing one or use 'stb update' instead")
-        return False
+def clone_repo(git_link: str) -> bool:
+    return bool(sh_with_log(f"git clone {git_link}"))
 
 
 def get_python_version(pyproject_path: Path) -> Optional[str]:
@@ -98,5 +90,57 @@ def get_usable_pyenv_version(current: str, available: Sequence[str], install: bo
             return version
 
 
-def get_repositories_to_clone(repo_names: List[str]) -> Dict[str, str]:
-    return {n: f"{CONFIG['git_url']}/{n}.git" for n in repo_names}
+def get_repositories_to_clone(repo_names: List[str]) -> List[Tuple[str, str]]:
+    """Expands gitlab repo names to include all repos if the name is a group or a namespace"""
+    expanded_repo_names = []
+
+    for name in repo_names:
+        # Remove all whitespace in case the user accidentally added some
+        name = "".join(name.split())
+
+        if name.count("/") == 2:
+            expanded_repo_names.append(f'{CONFIG["git_url"]}:{name}.git')
+        else:
+            with requests.Session() as session:
+                session.headers = {"PRIVATE-TOKEN": CONFIG["gitlab_api_token"]}
+                project_jsons = _paginated_get(f"{get_gitlab_api_url()}/projects", session)
+
+                projects = [
+                    (p["path"], p["ssh_url_to_repo"])
+                    for p in project_jsons
+                    if p["path_with_namespace"].startswith(name)
+                ]
+                if not projects:
+                    raise ValueError(
+                        f"Failed to find any projects that start with '{name}'. Maybe you need to add a group/namespace or to fix a typo?"
+                    )
+                non_repeating_projects = []
+                for project in projects:
+                    if Path(project[0]).exists():
+                        yes = typer.confirm(
+                            f"Found project {project[0]} but a folder with the same name already exists. You should use `stb update` for it instead. Would you like to skip it?",
+                        )
+                        if not yes:
+                            raise typer.Exit(1)
+                    else:
+                        non_repeating_projects.append(project)
+                expanded_repo_names.extend(non_repeating_projects)
+
+    return expanded_repo_names
+
+
+def _paginated_get(url: str, session: requests.Session) -> List[Dict[str, Any]]:
+    """Gets a paginated response from the gitlab api"""
+    response = session.get(url, params={"per_page": 20})
+    response.raise_for_status()
+
+    total_pages = int(response.headers["X-Total-Pages"])
+
+    projects = response.json()
+
+    for _ in range(1, total_pages):
+        response = session.get(response.links["next"]["url"])
+        response.raise_for_status()
+        projects.extend(response.json())
+
+    return projects

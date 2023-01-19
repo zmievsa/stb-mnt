@@ -57,12 +57,9 @@ try:
             ...,
             help="Names of services to setup. For example, use 'backend/oatmeal' to setup oatmeal service in the backend namespace",
         ),
-        no_clone: bool = typer.Option(
-            False, "--no-clone", help="Skips cloning the services. Useful if you've already cloned them"
-        ),
     ) -> None:
         """Does the initial localhost setup of microservices. Downloads, configures .env, inits submodules, installs the correct pyenv environment, creates the correct poetry environment, and installs dependencies"""
-        return setup.setup_services(services, no_clone)
+        return setup.setup_services(services)
 
 except ImportError:
     pass

@@ -12,22 +12,22 @@ pipx install stb-mnt
 
 ### Setup
 
-* To download and setup backend/service1 microservice as a subdirectory to the current working directory, use:
+* To download and setup my_company/backend/service1 microservice as a subdirectory to the current working directory, use:
 
 ```bash
-stb setup backend/service1
+stb setup my_company/backend/service1
 ```
 
-* To download and setup backend/service1 and backend/service2 as subdirectories to current working directory, use:
+* To download and setup my_company/backend/service1 and my_company/backend/service2 as subdirectories to current working directory, use:
 
 ```bash
-stb setup backend/service1 backend/service2
+stb setup my_company/backend/service1 my_company/backend/service2
 ```
 
-* To setup backend/service1 that you have already cloned, use:
+* To setup all backend services, use:
 
 ```bash
-stb setup backend/service1 --no-clone
+stb setup my_company/backend
 ```
 
 Note that if you want to clone repositories, you must first set a `git_url` using `stb config set git_url` command
