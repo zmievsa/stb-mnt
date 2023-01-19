@@ -27,11 +27,7 @@ def use_package(package_name: str, version_or_path: str) -> None:
     if new_value_is_path:
         new_path = Path(version_or_path).resolve()
         if "path" in old_value:
-            if Path(old_value["path"]).resolve() == new_path:
-                typer.echo(f"Package {package_name} is already using the path {version_or_path}.")
-                return
-            else:
-                old_value["path"] = str(new_path)
+            old_value["path"] = str(new_path)
         else:
             old_value.pop("version", None)
             old_value.pop("source", None)
@@ -59,22 +55,22 @@ def use_package(package_name: str, version_or_path: str) -> None:
                 )
             )
         else:
-            if old_value["version"] == version_or_path:
-                typer.echo(f"Package {package_name} is already using the version {version_or_path}.")
-                return
-            else:
-                old_value["version"] = version_or_path
+            old_value["version"] = version_or_path
 
     save_pyproject(pyproject_path, pyproject)
-
-    if new_value_is_path:
-        cmd = "poetry install"
-    else:
-        cmd = f"poetry update {package_name}"
-    result = sh_with_log(cmd)
-    if result.returncode != 0:
+    try:
+        if new_value_is_path:
+            cmd = "poetry install"
+        else:
+            cmd = f"poetry update {package_name}"
+        result = sh_with_log(cmd)
+        if result.returncode != 0:
+            typer.echo("Failed to update the package. Rolling back the changes.")
+            pyproject_path.write_text(raw_old_pyproject)
+    except BaseException:
         typer.echo("Failed to update the package. Rolling back the changes.")
         pyproject_path.write_text(raw_old_pyproject)
+        raise
 
 
 def save_pyproject(pyproject_path, pyproject):
