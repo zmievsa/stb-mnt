@@ -58,7 +58,7 @@ def use_package(package_name: str, version_or_path: str, fix: bool) -> None:
             old_value["version"] = version_or_path
 
     if fix:
-        result = sh_with_log("poetry remove package_name")
+        result = sh_with_log(f"poetry remove {package_name}")
         if not result:
             raise typer.Exit(1)
     save_pyproject(pyproject_path, pyproject)
