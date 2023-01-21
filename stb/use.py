@@ -12,7 +12,7 @@ from .util import sh_with_log
 PYENV_INSTALLED = which("pyenv")
 
 
-def use_package(package_name: str, version_or_path: str) -> None:
+def use_package(package_name: str, version_or_path: str, fix: bool) -> None:
     pyproject_path = Path("pyproject.toml")
     if not pyproject_path.exists():
         raise FileNotFoundError("No pyproject.toml found in the current directory. It is required by 'use' to work.")
@@ -57,6 +57,10 @@ def use_package(package_name: str, version_or_path: str) -> None:
         else:
             old_value["version"] = version_or_path
 
+    if fix:
+        result = sh_with_log("poetry remove package_name")
+        if not result:
+            raise typer.Exit(1)
     save_pyproject(pyproject_path, pyproject)
     try:
         if new_value_is_path:
@@ -64,7 +68,7 @@ def use_package(package_name: str, version_or_path: str) -> None:
         else:
             cmd = f"poetry update {package_name}"
         result = sh_with_log(cmd)
-        if result.returncode != 0:
+        if not result:
             typer.echo("Failed to update the package. Rolling back the changes.")
             pyproject_path.write_text(raw_old_pyproject)
     except BaseException:
