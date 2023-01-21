@@ -99,7 +99,7 @@ def get_repositories_to_clone(repo_names: List[str], skip_existing: bool) -> Lis
         name = "".join(name.split())
 
         if name.count("/") == 2:
-            expanded_repo_names.append((name, f'{CONFIG["git_url"]}:{name}.git'))
+            expanded_repo_names.append((name.split("/")[-1], f'{CONFIG["git_url"]}:{name}.git'))
         else:
             with requests.Session() as session:
                 session.headers = {"PRIVATE-TOKEN": CONFIG["gitlab_api_token"]}
