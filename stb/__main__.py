@@ -31,9 +31,13 @@ def use_(
         help="Either package version or path to the package. For example, `8.3.1` or `~/my_package`",
         show_default=False,
     ),
+    fix: bool = typer.Option(
+        False,
+        help="Fix the broken version of the package in the current project as well. Useful when dependency resolution doesn't work properly",
+    ),
 ) -> None:
     """Switches the version of a company package in the current project. For example, `stb use my_package 0.1.0` or `stb use my_package ~/package`"""
-    return use.use_package(package_name, version_or_path)
+    return use.use_package(package_name, version_or_path, fix)
 
 
 def run_(
