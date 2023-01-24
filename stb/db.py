@@ -10,7 +10,7 @@ import rich
 import typer
 from pysh import env
 
-from .util import SERVICE_PATHS_ARG, Service, add_default_service_path, cd_with_log, get_service, sh_with_log
+from .utils.common import SERVICE_PATHS_ARG, Service, add_default_service_path, cd_with_log, get_service, sh_with_log
 
 
 def old_parallel_flag_deprecation_callback(value: bool):

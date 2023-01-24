@@ -25,11 +25,13 @@ def version_callback(value: bool):
 
 @app.command(name="use")
 def use_(
-    package_name: str = typer.Argument(..., help="Package to use. For example, `my_package`", show_default=False),
-    version_or_path: str = typer.Argument(
+    requirements: List[str] = typer.Argument(
         ...,
-        help="Either package version or path to the package. For example, `8.3.1` or `~/my_package`",
-        show_default=False,
+        help="Package versions to use. For example, `my_package` or `my_package==3.1.4` or `~/path/to/my_package`",
+    ),
+    editable: bool = typer.Option(
+        False,
+        help="Install the package(s) in editable mode. Useful when you want to develop the package and use it in the current project at the same time",
     ),
     fix: bool = typer.Option(
         False,
@@ -37,7 +39,7 @@ def use_(
     ),
 ) -> None:
     """Switches the version of a company package in the current project. For example, `stb use my_package 0.1.0` or `stb use my_package ~/package`"""
-    return use.use_package(package_name, version_or_path, fix)
+    return use.use_packages(requirements, editable, fix)
 
 
 def run_(

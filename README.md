@@ -46,16 +46,10 @@ stb update env
 stb update ports
 ```
 
-* To install the dependencies from poetry.lock file and update submodules:
+* To update poetry.lock file, install dependencies, stash current changes, checkout to master, pull from remote, and recreate databases:
 
 ```bash
-stb update package
-```
-
-* To update poetry.lock file, install dependencies, update submodules, stash current changes, checkout to master, pull from remote, and recreate databases:
-
-```bash
-stb update package -pucd
+stb update package -piucd
 ```
 
 or  
@@ -112,18 +106,30 @@ stb db reset -f
   
 ### Use
 
-`stb use` allows you to take a company private package and install either a cloud version or a local version of it. STB will preserve all extras and will gracefully handle any issues that might happen while updating.
+`stb use` allows you to take a company private package and install either a cloud version or a local version of it. STB will preserve all extras, automatically set package source, and will gracefully handle any issues that might happen while updating.
 
 * To install a local version of `my_package` that is located at `../my_package`:
 
 ```bash
-stb use my_package ../my_package
+stb use ../my_package
+```
+
+* To install a local version of `my_package` that is located at `../my_package` in editable mode:
+
+```bash
+stb use ../my_package --editable
 ```
 
 * To install a cloud version of `my_package` with tag `8.3.1`:
 
 ```bash
-stb use my_package 8.3.1
+stb use "my_package==8.3.1"
+```
+
+* To install a cloud version of my_package with tag `8.3.1`, my_other_package with any tag higher than `1.2.3`, and my_third_package with any tag more than or equal to `4.5.6` and less than `5.0.0`:
+
+```bash
+stb use "my_package==8.3.1" "my_other_package>1.2.3" "my_third_package^4.5.6"
 ```
 
 ### Run
