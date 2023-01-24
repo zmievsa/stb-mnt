@@ -69,12 +69,13 @@ def ports(service_paths: List[Path] = SERVICE_PATHS_ARG) -> None:
     service_to_port_mapper = {service.dir.name: port for port, service in enumerate(services.values(), start=8000)}
     microservice_fields = {convert_microservice_name_to_env_field(m): n for m, n in service_to_port_mapper.items()}
     for service_name, service in services.items():
+        helm_env_defaults = (service.yaml_config or {}).get("common", {}).get("envs", {})
         service.dotenv["SERVICE_PORT"] = str(service_to_port_mapper[service_name])
         for field in [f for f in service.dotenv if f.endswith("_URL")]:
             if field in microservice_fields:
                 service.dotenv[field] = f"http://localhost:{microservice_fields[field]}"
             else:
-                helm_defaults = (service.yaml_config or {}).get(field.lower())
+                helm_defaults = helm_env_defaults.get(field.upper())
                 if helm_defaults is not None and "review" in helm_defaults:
                     service.dotenv[field] = helm_defaults["review"]
 
