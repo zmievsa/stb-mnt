@@ -7,7 +7,7 @@ import tomlkit
 import typer
 from platformdirs import user_config_dir
 
-from .util import sh_with_log
+from .utils.common import sh_with_log
 
 set_app = typer.Typer(
     name="set",

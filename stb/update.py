@@ -8,7 +8,7 @@ from pysh import sh
 
 from .db import Choices
 from .db import run_on_single_service as stb_db
-from .util import (
+from .utils.common import (
     ENV_VARS,
     SERVICE_PATHS_ARG,
     add_default_service_path,
@@ -86,6 +86,12 @@ def ports(service_paths: List[Path] = SERVICE_PATHS_ARG) -> None:
 @add_default_service_path
 def package(
     service_paths: List[Path] = SERVICE_PATHS_ARG,
+    install_dependencies: bool = typer.Option(
+        False,
+        "-i",
+        "--install",
+        help="Run poetry install",
+    ),
     update_dependencies: bool = typer.Option(
         False,
         "-u",
@@ -110,7 +116,7 @@ def package(
         "--env",
         help="Update .env files with new/modified fields from .env.example",
     ),
-    checkout_to_master: bool = typer.Option(
+    checkout_to_master: str = typer.Option(
         False,
         "-c",
         "--checkout",
@@ -134,10 +140,9 @@ def package(
                 sh_with_log("git checkout master")
             if pull_changes:
                 sh_with_log("git pull")
-            sh_with_log("git submodule update --init --recursive", "", "")
             if update_dependencies:
                 sh_with_log("poetry update")
-            else:
+            elif install_dependencies:
                 sh_with_log("poetry install")
             if update_env:
                 env([service.dir])

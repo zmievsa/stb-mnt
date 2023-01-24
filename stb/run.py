@@ -2,7 +2,7 @@ from typing import Set
 
 import typer
 
-from stb.util import cd_with_log, sh_with_log
+from stb.utils.common import cd_with_log, sh_with_log
 
 app = typer.Typer(
     name="run",
@@ -19,7 +19,6 @@ def run_services(services: Set[str]) -> None:
             sh_with_log("git stash")
             sh_with_log("git checkout master")
             sh_with_log("git pull")
-            sh_with_log("git submodule update --init --recursive")
             sh_with_log("stb db reset")
             sh_with_log("poetry install")
 

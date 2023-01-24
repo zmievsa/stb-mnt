@@ -2,13 +2,13 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import requests
-import tomlkit as toml
+import tomli as toml
 import typer
 from pysh import sh, which
 
 from . import update
 from .config import CONFIG, get_gitlab_api_url
-from .util import cd_with_log, clean_python_version, parse_python_version, sh_with_log
+from .utils.common import cd_with_log, clean_python_version, parse_python_version, sh_with_log
 
 PYENV_INSTALLED = which("pyenv")
 
@@ -34,7 +34,6 @@ def setup_service(repo_name: str, git_link: str, installable_pyenv_versions: Lis
 
     if success:
         with cd_with_log(repo_name):
-            sh_with_log("git submodule update --init --recursive", "", "")
             if Path("pyproject.toml").exists():
                 python_version = get_python_version(Path("pyproject.toml"))
                 if python_version:
