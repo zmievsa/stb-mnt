@@ -87,11 +87,13 @@ def ports(service_paths: List[Path] = SERVICE_PATHS_ARG) -> None:
 @add_default_service_path
 def package(
     service_paths: List[Path] = SERVICE_PATHS_ARG,
-    install_dependencies: bool = typer.Option(
-        False,
-        "-i",
-        "--install",
+    install: bool = typer.Option(
+        True,
         help="Run poetry install",
+    ),
+    all_extras: bool = typer.Option(
+        True,
+        help="If --install-dependencies is true, install all extras as well",
     ),
     update_dependencies: bool = typer.Option(
         False,
@@ -117,7 +119,7 @@ def package(
         "--env",
         help="Update .env files with new/modified fields from .env.example",
     ),
-    checkout_to_master: str = typer.Option(
+    checkout_to_master: bool = typer.Option(
         False,
         "-c",
         "--checkout",
@@ -132,7 +134,7 @@ def package(
     for service in gather_services(service_paths).values():
         with cd_with_log(service.dir):
             if checkout_to_master:
-                res = sh_with_log("git diff", capture=True)
+                res = sh("git diff", capture=True)
                 if res.stdout:
                     sh_with_log("git stash")
                     res = sh("git branch --show-current", capture=True)
@@ -143,13 +145,15 @@ def package(
                 sh_with_log("git pull")
             if update_dependencies:
                 sh_with_log("poetry update")
-            elif install_dependencies:
-                sh_with_log("poetry install")
+            elif install:
+                all_extras_arg = "--all-extras" if all_extras else ""
+                sh_with_log(f"poetry install {all_extras_arg}")
             if update_env:
                 env([service.dir])
             if update_ports:
                 ports([service.dir])
             if not no_reset_databases:
+                print(f"Resetting databases for {service.dir.name}...")
                 with suppress(LookupError):
                     stb_db(service.dir, Choices.drop, force_drop=True)
                     stb_db(service.dir, Choices.create, parallel_migrations=True)

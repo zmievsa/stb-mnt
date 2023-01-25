@@ -41,7 +41,7 @@ def setup_service(repo_name: str, git_link: str, installable_pyenv_versions: Lis
                         setup_pyenv_locally(python_version, installable_pyenv_versions)
                     else:
                         sh_with_log(f"poetry env use {python_version}")
-                sh_with_log("poetry install")
+                sh_with_log("poetry install --all-extras")
             update.env([Path()])
             update.ports([Path()])
     else:
