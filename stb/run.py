@@ -20,7 +20,7 @@ def run_services(services: Set[str]) -> None:
             sh_with_log("git checkout master")
             sh_with_log("git pull")
             sh_with_log("stb db reset")
-            sh_with_log("poetry install")
+            sh_with_log("poetry install --all-extras")
 
     concurrently_query = " ".join([f'"cd {s} && (make run || poetry run python3 run.py)"' for s in services])
 
