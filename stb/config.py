@@ -92,7 +92,7 @@ get_pypi_source, set_pypi_source = make_command(
 
 get_pypi_registry_id, set_pypi_registry_id = make_command(
     "pypi_registry_id",
-    "the id of the package whose registry is used for downloading internal packages",
+    "id of the package whose registry is used for downloading internal packages",
     re.compile(r"^\d+$"),
 )
 
