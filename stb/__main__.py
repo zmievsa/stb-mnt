@@ -3,7 +3,7 @@ from typing import List
 import typer
 from pysh import which
 
-from stb import config, db, run, update, use
+from stb import config, db, graph, run, update, use
 from stb.__version__ import __version__
 
 app = typer.Typer(
@@ -15,6 +15,7 @@ app = typer.Typer(
 app.add_typer(db.app, name="db")
 app.add_typer(update.app)
 app.add_typer(config.config_app)
+app.add_typer(graph.app)
 
 
 def version_callback(value: bool):
