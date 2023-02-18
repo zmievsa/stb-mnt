@@ -13,6 +13,7 @@ from .utils.common import cd_with_log, clean_python_version, parse_python_versio
 PYENV_INSTALLED = which("pyenv")
 
 
+@CONFIG.requires("git_url")
 def setup_services(services: List[str], skip_existing: bool) -> None:
     if not "git_url" in CONFIG:
         raise typer.BadParameter("You must set the git_url in the config file before you can use this command")

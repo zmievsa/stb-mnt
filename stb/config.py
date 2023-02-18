@@ -1,7 +1,8 @@
+import functools
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Optional, ParamSpec, Tuple, TypeVar
 
 import tomlkit
 import typer
@@ -25,6 +26,8 @@ config_app = typer.Typer(
 
 config_app.add_typer(set_app)
 config_app.add_typer(get_app)
+P = ParamSpec("P")
+T = TypeVar("T")
 
 
 @dataclass(init=False)
@@ -51,6 +54,28 @@ class Config:
         if path is None:
             path = self.config_file
         path.write_text(tomlkit.dumps(self.doc))
+
+    def requires(self, first_key: str, *keys: str):
+        def decorator(func: Callable[P, T]) -> Callable[P, T]:
+            @functools.wraps(func)
+            def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
+                self.check_keys_have_been_set(first_key, *keys)
+                return func(*args, **kwargs)
+
+            return wrapper
+
+        return decorator
+
+    def check_keys_have_been_set(self, *keys: str) -> None:
+        missing_keys = [key for key in keys if key not in self]
+        if missing_keys:
+            raise typer.BadParameter(
+                "\n".join(
+                    f"You must set the '{key}' parameter in the config file before you can use this command."
+                    for key in missing_keys
+                )
+                + "\n\nSee `stb config set --help for more information`"
+            )
 
 
 CONFIG = Config()
@@ -117,12 +142,10 @@ def set_gitlab_api_token(
     CONFIG.save()
 
 
+@CONFIG.requires("pypi_source", "pypi_registry_id", "gitlab_api_token", "git_url")
 @config_app.command()
 def poetry() -> None:
     """Setup poetry config based on exiting stb config"""
-    for key in ["pypi_source", "pypi_registry_id", "gitlab_api_token", "git_url"]:
-        if key not in CONFIG:
-            raise typer.BadParameter(f"{key} is not set yet but it is required for poetry config")
 
     api_url = get_gitlab_api_url()
 

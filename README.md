@@ -148,6 +148,20 @@ stb run service1 service2
 stb config set git_url git@gitlab.my_company.com
 ```
 
+### Graph
+
+* To get a dependency graph of your microservices:
+
+```bash
+stb graph json my_company/backend/ my_company/infrastructure/
+```
+
+* To get a dependency graph of your microservices as an svg image (requires graphviz):
+
+```bash
+stb graph graphviz my_company/backend/ my_company/infrastructure/
+```
+
 ### How directories are selected for update/db
 
 For every update, you can specify:
