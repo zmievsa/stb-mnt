@@ -36,12 +36,12 @@ today = datetime.datetime.today().strftime("%y%m%d_%H%M%S")
 if which("dot"):
 
     @app.command()
-    def graphviz(services: List[str], output: Path = Path(f"output_{today}.svg")):
+    def graphviz(services: List[str]):
         """Graphs the dependencies of microservices using graphviz"""
         with contextlib.redirect_stdout(io.StringIO()):
             deps = json_(services)
         stuff = "\n".join([f"{k.replace('-', '_')} -> {dep.replace('-', '_')}" for k, v in deps.items() for dep in v])
-        subprocess.run(f"dot -Tsvg > {output}", shell=True, text=True, input=GRAPHVIZ_INPUT.format(stuff))
+        subprocess.run(f"dot -Tsvg", shell=True, text=True, input=GRAPHVIZ_INPUT.format(stuff))
 
 
 @CONFIG.requires("gitlab_api_token", "git_url")
@@ -58,7 +58,7 @@ def json_(services: List[str]):
         # Extract the dependencies with source "monite"
         dep_mapping[service_name] = get_direct_dependencies(pyproject)
     dep_mapping = {k: v for k, v in dep_mapping.items() if dep_is_in_mapping(dep_mapping, k)}
-    print(json.dumps(dep_mapping, indent=4, ensure_ascii=False))
+    typer.echo(json.dumps(dep_mapping, indent=4, ensure_ascii=False))
     return dep_mapping
 
 
