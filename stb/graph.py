@@ -44,6 +44,7 @@ if which("dot"):
         subprocess.run(f"dot -Tsvg > {output}", shell=True, text=True, input=GRAPHVIZ_INPUT.format(stuff))
 
 
+@CONFIG.requires("gitlab_api_token", "git_url")
 @app.command(name="json")
 def json_(services: List[str]):
     gl = gitlab.Gitlab(url=get_gitlab_api_url().removesuffix("/api/v4"), private_token=CONFIG["gitlab_api_token"])
