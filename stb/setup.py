@@ -102,7 +102,7 @@ def get_repositories_to_clone(repo_names: List[str], skip_existing: bool) -> Lis
             expanded_repo_names.append((name.split("/")[-1], f'{CONFIG["git_url"]}:{name}.git'))
         else:
             with requests.Session() as session:
-                session.headers = {"PRIVATE-TOKEN": CONFIG["gitlab_api_token"]}
+                session.headers = {"PRIVATE-TOKEN": CONFIG.get_api_token()}
                 project_jsons = _paginated_get(f"{get_gitlab_api_url()}/projects", session)
 
                 projects = [
