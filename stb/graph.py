@@ -3,7 +3,6 @@ import datetime
 import io
 import json
 import subprocess
-from pathlib import Path
 from typing import List
 
 import gitlab
@@ -110,7 +109,7 @@ def get_projects(gl: gitlab.Gitlab, repo_names: List[str]) -> list:
     repo_names = ["".join(name.split()) for name in repo_names]
     for name in repo_names:
         if name.count("/") == 2:
-            calculated_projects.append((name.split("/")[-1]))
+            calculated_projects.append(name.split("/")[-1])
 
     for name in repo_names:
         # Remove all whitespace in case the user accidentally added some
