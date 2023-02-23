@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "stb-mnt"
 packages = [{ include = "stb" }]
-version = "4.4.0"
+version = "4.5.0"
 description = "A universal tool for local microservice management."
 readme = "README.md"
 authors = ["Stanislav Zmiev <szmiev2000@gmail.com>"]

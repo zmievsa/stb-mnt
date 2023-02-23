@@ -1,3 +1,4 @@
+import contextlib
 import functools
 import re
 from dataclasses import dataclass
@@ -12,7 +13,9 @@ from platformdirs import user_config_dir
 
 from .utils.common import sh_with_log
 
-APP_TOKEN_NAME = "stb_gitlab_api_token"
+STB_APP_CONFIG_NAME = "stb"
+STB_APP_AUTHOR_NAME = "ovsyanka83"
+APP_TOKEN_NAME = "stb_app_token"
 
 set_app = typer.Typer(
     name="set",
@@ -37,7 +40,7 @@ T = TypeVar("T")
 @dataclass(init=False)
 class Config:
     def __init__(self) -> None:
-        self.config_dir = Path(user_config_dir("stb", "ovsyanka83"))
+        self.config_dir = Path(user_config_dir(STB_APP_CONFIG_NAME, STB_APP_AUTHOR_NAME))
         self.config_dir.mkdir(parents=True, exist_ok=True)
         self.config_file = self.config_dir / "cfg.toml"
         self.doc = tomlkit.loads(self.config_file.read_text()) if self.config_file.exists() else tomlkit.document()
@@ -46,13 +49,16 @@ class Config:
         self.doc.__setitem__(key, value)
 
     def __getitem__(self, key: str) -> str:
+        if key == "gitlab_api_token":
+            return self.get_api_token()
         return str(self.doc.__getitem__(key))
 
     def __contains__(self, key: str) -> bool:
+        if key == "gitlab_api_token":
+            with contextlib.suppress(ValueError, typer.BadParameter):
+                self.get_api_token()
+                return True
         return self.doc.__contains__(key)
-
-    def get(self, key: str, default: Any = None):
-        return self.doc.get(key, default)
 
     def get_api_token(self) -> str:
         """Retrieves the gitLab api token from the keychain system service"""
@@ -69,6 +75,12 @@ class Config:
         if token is None:
             raise typer.BadParameter("gitlab_api_token is not set yet.")
         return token
+
+    def set_api_token(self, name: str, value: str) -> None:
+        try:
+            keyring.set_password(APP_TOKEN_NAME, name, value)
+        except (RuntimeError, keyring.errors.KeyringError) as e:
+            raise ValueError(f"Unable to store the token for {name} in the keyring: {e}")
 
     def save(self, path: Optional[Path] = None) -> None:
         if path is None:
@@ -159,11 +171,7 @@ def set_gitlab_api_token(
     """Set the gitlab api token name for setting up local services"""
     CONFIG["gitlab_api_token_name"] = token_name
     CONFIG.save()
-
-    try:
-        keyring.set_password(APP_TOKEN_NAME, token_name, token)
-    except (RuntimeError, keyring.errors.KeyringError) as e:
-        raise ValueError(f"Unable to store the token for {token_name} in the keyring: {e}")
+    CONFIG.set_api_token(token_name, token)
 
 
 @CONFIG.requires("pypi_source", "pypi_registry_id", "gitlab_api_token", "git_url")
@@ -186,6 +194,19 @@ def get_gitlab_api_url() -> str:
     return f"https://{git_host}/api/v4"
 
 
+# TODO: Delete after everyone has updated to >=3.0.0
 if "git_url" in CONFIG and ":" in CONFIG["git_url"]:
     CONFIG["git_url"] = CONFIG["git_url"].split(":")[0]
+    CONFIG.save()
+
+# TODO: Delete after everyone has updated to >=4.5.0
+if "gitlab_api_token" in CONFIG.doc:
+    if "gitlab_api_token_name" in CONFIG.doc:
+        try:
+            CONFIG.get_api_token()
+        except typer.BadParameter:
+            typer.echo("Adding gitlab api token into keyring")
+            CONFIG.set_api_token(CONFIG["gitlab_api_token_name"], CONFIG["gitlab_api_token"])
+    typer.echo("Removing gitlab_api_token from config")
+    CONFIG.doc.remove("gitlab_api_token")
     CONFIG.save()
