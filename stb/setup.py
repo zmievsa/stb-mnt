@@ -18,7 +18,7 @@ def setup_services(services: List[str], skip_existing: bool) -> None:
     if not "git_url" in CONFIG:
         raise typer.BadParameter("You must set the git_url in the config file before you can use this command")
     if not PYENV_INSTALLED:
-        typer.echo("Failed to locate pyenv. Will use the system python version(s) instead")
+        typer.echo("Failed to locate pyenv. Will use the system python version(s) instead", err=True)
     installable_pyenv_versions = [
         clean_python_version(" \t~^*") for v in sh("pyenv install --list", capture=True).stdout.split("\n") if v.strip()
     ]
@@ -30,7 +30,7 @@ def setup_services(services: List[str], skip_existing: bool) -> None:
 
 
 def setup_service(repo_name: str, git_link: str, installable_pyenv_versions: List[str]):
-    typer.echo(f"Setting up {repo_name}")
+    typer.echo(f"Setting up {repo_name}", err=True)
     success = clone_repo(git_link)
 
     if success:
@@ -60,7 +60,9 @@ def get_python_version(pyproject_path: Path) -> Optional[str]:
     if version_info:
         return f"{version_info[0]}.{version_info[1]}"
     else:
-        typer.echo("Failed to read python version from pyproject.toml. It's either invalid or too complex for me.")
+        typer.echo(
+            "Failed to read python version from pyproject.toml. It's either invalid or too complex for me.", err=True
+        )
 
 
 def setup_pyenv_locally(python_version: str, installable_pyenv_versions: List[str]):
