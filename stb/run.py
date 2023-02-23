@@ -11,7 +11,7 @@ app = typer.Typer(
 
 
 def run_services(services: Set[str]) -> None:
-    typer.echo("Checking out services...")
+    typer.echo("Checking out services...", err=True)
 
     for service in services:
         with cd_with_log(service):
