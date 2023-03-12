@@ -1,0 +1,93 @@
+{
+    "counterparts": [
+        "lithosphere",
+        "events"
+    ],
+    "databus": [],
+    "lithosphere": [],
+    "accounting": [
+        "receivables",
+        "databus",
+        "lithosphere",
+        "auth-n-settings",
+        "counterparts"
+    ],
+    "payables": [
+        "lithosphere",
+        "file-saver",
+        "ocr-proxy",
+        "auth-n-settings",
+        "document-ids",
+        "exchange-rates",
+        "mailer",
+        "events",
+        "receivables",
+        "partner-api",
+        "databus"
+    ],
+    "text-templates": [
+        "auth-n-settings",
+        "receivables"
+    ],
+    "auth-n-settings": [
+        "file-saver",
+        "databus",
+        "events",
+        "pdf-render"
+    ],
+    "payments": [
+        "payables",
+        "auth-n-settings",
+        "receivables",
+        "events",
+        "exchange-rates",
+        "counterparts"
+    ],
+    "exchange-rates": [],
+    "receivables": [
+        "mailer",
+        "databus",
+        "file-saver",
+        "lithosphere",
+        "events",
+        "document-ids",
+        "auth-n-settings",
+        "counterparts"
+    ],
+    "pdf-render": [
+        "payables",
+        "pdf-render",
+        "file-saver",
+        "auth-n-settings",
+        "databus",
+        "counterparts",
+        "receivables"
+    ],
+    "partners-portal": [
+        "file-saver",
+        "auth-n-settings",
+        "mailer"
+    ],
+    "partner-api": [
+        "payables",
+        "file-saver",
+        "databus",
+        "mailer",
+        "exchange-rates",
+        "auth-n-settings",
+        "events",
+        "receivables"
+    ],
+    "ocr-proxy": [
+        "databus",
+        "lithosphere"
+    ],
+    "mailer": [],
+    "mailboxes": [
+        "databus",
+        "file-saver"
+    ],
+    "file-saver": [],
+    "events": [],
+    "document-ids": []
+}

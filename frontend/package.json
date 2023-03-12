@@ -1,0 +1,36 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@babel/core": "^7.20.7",
+    "@react-sigma/core": "^3.1.0",
+    "@react-sigma/layout-force": "^3.1.0",
+    "@react-sigma/layout-forceatlas2": "^3.1.0",
+    "graphology": "^0.25.1",
+    "graphology-layout": "^0.6.1",
+    "graphology-layout-force": "^0.2.4",
+    "graphology-layout-forceatlas2": "^0.10.1",
+    "lodash": "^4.17.21",
+    "preact": "^10.11.3",
+    "react-force-graph": "^1.41.18",
+    "react-sigma": "^1.2.35",
+    "sigma": "^2.4.0"
+  },
+  "devDependencies": {
+    "@babel/plugin-transform-react-jsx-source": "^7.19.6",
+    "@preact/preset-vite": "^2.4.0",
+    "autoprefixer": "^10.4.13",
+    "graphology-types": "^0.24.5",
+    "postcss": "^8.4.21",
+    "tailwindcss": "^3.2.4",
+    "typescript": "^4.9.3",
+    "vite": "^4.0.0"
+  }
+}
