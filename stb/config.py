@@ -206,7 +206,11 @@ if "gitlab_api_token" in CONFIG.doc:
             CONFIG.get_api_token()
         except typer.BadParameter:
             typer.echo("Adding gitlab api token into keyring", err=True)
-            CONFIG.set_api_token(CONFIG["gitlab_api_token_name"], CONFIG["gitlab_api_token"])
+            try:
+                CONFIG.set_api_token(CONFIG.doc["gitlab_api_token_name"], CONFIG.doc["gitlab_api_token"])
+            except Exception as e:
+                typer.echo(f"Something went wrong, please set the token again. Error message:\n{e}", err=True)
+
     typer.echo("Removing gitlab_api_token from config", err=True)
     CONFIG.doc.remove("gitlab_api_token")
     CONFIG.save()
