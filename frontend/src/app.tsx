@@ -34,7 +34,7 @@ export function App() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '100vh' }}>
-      <GraphContainer style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <GraphContainer>
         <div style={{ width: '50%', marginBottom: '1rem' }}>
           <textarea
             placeholder="Enter JSON here"
