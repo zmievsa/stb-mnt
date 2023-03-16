@@ -1,6 +1,6 @@
 import { useRef, useContext, useState, useCallback, useEffect } from 'preact/hooks'
 import { ForceGraph2D } from 'react-force-graph'
-import { GraphContext, GraphData } from './context'
+import { GraphContext } from './context'
 import Graph from "graphology";
 
 const NODE_R = 5;
@@ -26,8 +26,11 @@ export const GraphRender = () => {
 
     // log graph
     useEffect(() => {
+        // @ts-ignore
         console.log(fgRef.current.d3Force('link').strength(0.2))
+        // @ts-ignore
         console.log(fgRef.current.d3Force('charge').strength(-100))
+        // @ts-ignore
         console.log(fgRef.current.d3Force('center').strength(1.8))
     }, [graph])
 
