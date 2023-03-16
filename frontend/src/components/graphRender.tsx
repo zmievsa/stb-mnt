@@ -104,6 +104,7 @@ export const GraphRender = () => {
         linkDirectionalParticleWidth={link => highlightLinks.has(link) ? 4 : 0}
         linkDirectionalParticleColor={() => 'red'}
         nodeCanvasObjectMode={node => 'before'}
+        linkDirectionalParticleSpeed={0.003}
         nodeCanvasObject={paintRing}
         onNodeHover={node => handleNodeHover(node, graph)}
         onLinkHover={handleLinkHover}
