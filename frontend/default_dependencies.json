@@ -1,0 +1,88 @@
+{
+    "attrs": [],
+    "autoflake": [
+        "pyflakes",
+        "tomli",
+        "colorama",
+        "GitPython",
+        "PyYAML",
+        "stevedore",
+        "toml"
+    ],
+    "black": [
+        "click",
+        "mypy-extensions",
+        "pathspec",
+        "platformdirs",
+        "tomli",
+        "typing-extensions"
+    ],
+    "certifi": [],
+    "click": [
+        "colorama"
+    ],
+    "commonmark": [],
+    "coverage": [
+        "tomli"
+    ],
+    "exceptiongroup": [],
+    "iniconfig": [],
+    "isort": [],
+    "jeepney": [],
+    "mypy-extensions": [],
+    "packaging": [],
+    "pathspec": [],
+    "pbr": [],
+    "platformdirs": [],
+    "pluggy": [],
+    "pycparser": [],
+    "pyflakes": [],
+    "pygments": [],
+    "pysh": [],
+    "pytest": [
+        "attrs",
+        "colorama",
+        "exceptiongroup",
+        "iniconfig",
+        "packaging",
+        "pluggy",
+        "tomli"
+    ],
+    "pytest-cov": [
+        "coverage",
+        "pytest"
+    ],
+    "python-dotenv": [],
+    "python-gitlab": [
+        "requests",
+        "requests-toolbelt"
+    ],
+    "pyyaml": [],
+    "requests": [
+        "certifi",
+        "charset-normalizer",
+        "idna",
+        "urllib3"
+    ],
+    "requests-toolbelt": [
+        "requests",
+        "commonmark",
+        "pygments",
+        "typing-extensions"
+    ],
+    "smmap": [],
+    "stevedore": [
+        "pbr"
+    ],
+    "toml": [],
+    "tomli": [],
+    "tomlkit": [],
+    "typer": [
+        "click",
+        "colorama",
+        "rich",
+        "shellingham"
+    ],
+    "typing-extensions": [],
+    "urllib3": []
+}

@@ -4,13 +4,14 @@ import Graph from 'graphology';
 import { random } from 'graphology-layout';
 import { Filter } from './components/controls/filter';
 import { Settings } from './components/controls/settings';
+import dependencies from '../default_dependencies.json';
 import { GraphRender } from './components/graphRender';
 import { GraphContainer, LoadGraph } from './components/graph';
 import { selectNode, resetGraph } from './utils';
 import { GraphContext } from './components/context';
 
 export function App() {
-  const [jsonInput, setJsonInput] = useState('');
+  const [jsonInput, setJsonInput] = useState(JSON.stringify(dependencies, null, 2));
   const [jsonDependencies, setJsonDependencies] = useState(new Map());
   const [showNodes, setShowNodes] = useState({});
   const [dependenciesLoaded, setDependenciesLoaded] = useState(false);
