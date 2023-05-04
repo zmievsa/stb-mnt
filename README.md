@@ -2,6 +2,11 @@
 
 A universal tool for local microservice management
 
+## Requirements
+
+* [Poetry](https://python-poetry.org/) - Required for setup functionality 
+* [Pyenv](https://github.com/pyenv/pyenv) - Optional
+
 ## Installation
 
 ```bash
