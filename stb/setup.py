@@ -20,7 +20,7 @@ def setup_services(services: List[str], skip_existing: bool) -> None:
     if not PYENV_INSTALLED:
         typer.echo("Failed to locate pyenv. Will use the system python version(s) instead", err=True)
     installable_pyenv_versions = [
-        clean_python_version(" \t~^*") for v in sh("pyenv install --list", capture=True).stdout.split("\n") if v.strip()
+        clean_python_version(v) for v in sh("pyenv install --list", capture=True).stdout.split("\n") if v.strip()
     ]
 
     repositories_to_clone = get_repositories_to_clone(services, skip_existing)
