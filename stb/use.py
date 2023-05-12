@@ -7,6 +7,7 @@ import typer
 from pysh import sh, which
 
 from stb.config import CONFIG
+from stb.utils.common import sh_with_log
 
 from .utils.dependency_parser import parse_dependency_specification
 
@@ -50,14 +51,14 @@ def use_packages(requirements: List[str], editable: bool = False, fix: bool = Fa
             version_based_requirements.append(f'"{spec.name}{extras_arg}@{version}"')
 
     if fix:
-        sh(f"poetry remove {' '.join(existing_requirements)}")
+        sh_with_log(f"poetry remove {' '.join(existing_requirements)}")
 
     for requirement in path_based_requirements:
-        sh(f"poetry add {requirement} {editable_arg}")
+        sh_with_log(f"poetry add {requirement} {editable_arg}")
 
     if version_based_requirements:
         formatted_version_based_requirements = " ".join(version_based_requirements)
-        sh(f"poetry add {formatted_version_based_requirements} --source={CONFIG['pypi_source']}")
+        sh_with_log(f"poetry add {formatted_version_based_requirements} --source={CONFIG['pypi_source']}")
 
 
 def extract_package_info_from_pyproject(package_name: str, dependencies: "dict[str, str | dict]") -> "dict[str, Any]":

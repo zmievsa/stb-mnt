@@ -88,7 +88,7 @@ def get_usable_pyenv_version(current: str, available: Sequence[str], install: bo
         version = version.strip("* \t\n")
         if version.startswith(current):
             if install:
-                sh(f"pyenv install {version}")
+                sh_with_log(f"pyenv install {version}")
             return version
 
 
