@@ -24,7 +24,7 @@ app = typer.Typer(
     name="migrator",
     help="creates/upgrades/drops dbs for microservices",
 )
-REQUIRED_DOTENV_KEYS = "POSTGRES_PASSWORD", "POSTGRES_PORT", "POSTGRES_USER"
+REQUIRED_DOTENV_KEYS = "POSTGRES_PASSWORD", "POSTGRES_USER"
 OLD_PARALLEL_MIGRATIONS_ARG = typer.Option(
     False,
     "-p",
@@ -114,10 +114,12 @@ def run_on_single_service(
     service = get_service(service_path)
 
     for field in REQUIRED_DOTENV_KEYS:
-        if not service.dotenv.get(field):
+        if field not in service.dotenv:
             err = f"{field} field is required for the correct functioning of stb db but it was not filled out in {service.dotenv_path}"
             typer.echo(err, err=True)
             raise LookupError(err)
+    if not "POSTGRES_PORT" in service.dotenv:
+        service.dotenv["POSTGRES_PORT"] = "5432"
 
     aerich_apps = find_aerich_apps(service)
     postgres_dbs = {v for k, v in service.dotenv.items() if k.startswith("POSTGRES_DB")}
