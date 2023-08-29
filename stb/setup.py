@@ -14,7 +14,13 @@ PYENV_INSTALLED = which("pyenv")
 
 
 @CONFIG.requires("git_url")
-def setup_services(services: List[str], skip_existing: bool) -> None:
+def setup_services(
+    services: List[str],
+    skip_existing: bool,
+    update_env: bool,
+    update_ports: bool,
+    setup_poetry_env: bool,
+) -> None:
     if not "git_url" in CONFIG:
         raise typer.BadParameter("You must set the git_url in the config file before you can use this command")
     if not PYENV_INSTALLED:
@@ -25,17 +31,41 @@ def setup_services(services: List[str], skip_existing: bool) -> None:
 
     repositories_to_clone = get_repositories_to_clone(services, skip_existing)
 
+    typer.echo(
+        f"Cloning {len(repositories_to_clone)} repositories: {', '.join([name for name, _ in repositories_to_clone])}"
+    )
+    skipped_repos = []
     for name, link in repositories_to_clone:
-        setup_service(name, link, installable_pyenv_versions)
+        setup_service(
+            name,
+            link,
+            installable_pyenv_versions,
+            update_env=update_env,
+            update_ports=update_ports,
+            setup_poetry_env=setup_poetry_env,
+            skipped_repos=skipped_repos,
+        )
+    if skipped_repos:
+        typer.echo(f"Skipped cloning the following repos: {', '.join(skipped_repos)}", err=True)
 
 
-def setup_service(repo_name: str, git_link: str, installable_pyenv_versions: List[str]):
+def setup_service(
+    repo_name: str,
+    git_link: str,
+    installable_pyenv_versions: List[str],
+    update_env: bool,
+    update_ports: bool,
+    setup_poetry_env: bool,
+    skipped_repos: list[str],
+):
     typer.echo(f"Setting up {repo_name}", err=True)
     success = clone_repo(git_link)
 
     if success:
+        if not (update_env or update_ports or setup_poetry_env):
+            return
         with cd_with_log(repo_name):
-            if Path("pyproject.toml").exists():
+            if Path("pyproject.toml").exists() and setup_poetry_env:
                 python_version = get_python_version(Path("pyproject.toml"))
                 if python_version:
                     if PYENV_INSTALLED:
@@ -43,10 +73,15 @@ def setup_service(repo_name: str, git_link: str, installable_pyenv_versions: Lis
                     else:
                         sh_with_log(f"poetry env use {python_version}")
                 sh_with_log("poetry install --all-extras")
-            update.env([Path()])
-            update.ports([Path()])
+            if update_env:
+                update.env([Path()])
+            if update_ports:
+                update.ports([Path()])
     else:
-        raise FileNotFoundError(f"Failed to enter the directory '{repo_name}'")
+        skipped_repos.append(repo_name)
+        typer.echo(
+            f"FAILED to enter the directory '{repo_name}'. Most likely because such directory already exists", err=True
+        )
 
 
 def clone_repo(git_link: str) -> bool:
