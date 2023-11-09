@@ -165,10 +165,14 @@ def get_gitlab_api_token() -> None:
 
 @set_app.command("gitlab_api_token")
 def set_gitlab_api_token(
-    token_name: str = typer.Argument(..., help="token name"),
-    token: str = typer.Argument(..., help="token itself"),
+        token_name: str = typer.Option(default=None, prompt="Please enter your gitlab api token name", ),
+        token: str = typer.Option(default=None, prompt="Please enter your token"),
 ) -> None:
     """Set the gitlab api token name for setting up local services"""
+    if token_name is None or token is None:
+        typer.echo("Token name or token is missing. Please, run the command again.")
+        raise typer.Exit()
+
     CONFIG["gitlab_api_token_name"] = token_name
     CONFIG.save()
     CONFIG.set_api_token(token_name, token)
