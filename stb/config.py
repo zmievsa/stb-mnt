@@ -163,16 +163,32 @@ def get_gitlab_api_token() -> None:
     typer.echo(f"{api_token_name} {api_token}")
 
 
+def no_whitespace(value: str) -> str:
+    if value.strip() == "":
+        raise typer.BadParameter("The value cannot contain only whitespaces or be empty")
+    return value
+
+
 @set_app.command("gitlab_api_token")
 def set_gitlab_api_token(
-        token_name: str = typer.Option(default=None, prompt="Please enter your gitlab api token name", ),
-        token: str = typer.Option(default=None, prompt="Please enter your token"),
+        welcome_prompt: str = typer.Option(
+            default="Please press enter to continue",
+            prompt="Before proceed you should get the API token here: "
+                   "https://gitlab.monite.com/-/profile/personal_access_tokens. Use the 'api' scope. \n"
+                   "DOCS: https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html\n",
+        ),
+        token_name: str = typer.Option(
+            default=None,
+            prompt="Please enter your gitlab api token name",
+            callback=no_whitespace,
+        ),
+        token: str = typer.Option(
+            default=None,
+            prompt="Please enter your token",
+            callback=no_whitespace,
+        ),
 ) -> None:
     """Set the gitlab api token name for setting up local services"""
-    if token_name is None or token is None:
-        typer.echo("Token name or token is missing. Please, run the command again.")
-        raise typer.Exit()
-
     CONFIG["gitlab_api_token_name"] = token_name
     CONFIG.save()
     CONFIG.set_api_token(token_name, token)
