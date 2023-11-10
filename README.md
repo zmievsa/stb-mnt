@@ -4,7 +4,7 @@ A universal tool for local microservice management
 
 ## Requirements
 
-* [Poetry](https://python-poetry.org/) - Required for setup functionality 
+* [Poetry](https://python-poetry.org/) - Required for setup functionality
 * [Pyenv](https://github.com/pyenv/pyenv) - Optional
 
 ## Installation
@@ -165,6 +165,12 @@ stb graph json my_company/backend/ my_company/infrastructure/
 
 ```bash
 stb graph graphviz my_company/backend/ my_company/infrastructure/
+```
+
+In both commands above, you can use the `-i` argument to omit some packages and links to them from your graph. For example:
+
+```bash
+stb graph json my_company/backend/ my_company/infrastructure/ -i my_internal_package -i my_other_package
 ```
 
 ### How directories are selected for update/db

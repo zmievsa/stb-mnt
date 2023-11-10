@@ -16,6 +16,11 @@ app = typer.Typer(
     name="graph",
     help="graphs the dependencies of microservices using various backends",
 )
+ignore_packages = typer.Option(
+    None,
+    "-i",
+    help="The packages to omit from output even if they are in the registry.",
+)
 
 REPLACEMENTS = {
     "xchange-rates": "exchange-rates",
@@ -35,27 +40,42 @@ today = datetime.datetime.today().strftime("%y%m%d_%H%M%S")
 if which("dot"):
 
     @app.command()
-    def graphviz(services: List[str]):
+    def graphviz(
+        services: List[str],
+        ignore_packages: list[str] = ignore_packages,
+    ):
         """Graphs the dependencies of microservices using graphviz"""
         with contextlib.redirect_stdout(io.StringIO()):
-            deps = json_(services)
+            deps = json_(services, ignore_packages)
         stuff = "\n".join([f"{k.replace('-', '_')} -> {dep.replace('-', '_')}" for k, v in deps.items() for dep in v])
         subprocess.run(f"dot -Tsvg", shell=True, text=True, input=GRAPHVIZ_INPUT.format(stuff))
 
 
-@CONFIG.requires("gitlab_api_token", "git_url")
+@CONFIG.requires("gitlab_api_token", "git_url", "pypi_registry_id")
 @app.command(name="json")
-def json_(services: List[str]):
+def json_(
+    services: List[str],
+    ignore_packages: list[str] = ignore_packages,
+):
     gl = gitlab.Gitlab(url=get_gitlab_api_url().removesuffix("/api/v4"), private_token=CONFIG["gitlab_api_token"])
     projects = get_projects(gl, services)
     dep_mapping = {}
+    project_with_registry = gl.projects.get(CONFIG["pypi_registry_id"])
+    packages = project_with_registry.packages.list(all=True)
+    package_names_in_registry = {package.name for package in packages}
+
     for pyproject in get_pyproject_tomls(projects):
         service_name = get_service_name(pyproject)
         if not service_name:
             continue
 
-        # Extract the dependencies with source "monite"
-        dep_mapping[service_name] = get_direct_dependencies(pyproject)
+        direct_dependencies = get_direct_dependencies(pyproject)
+        direct_registry_dependencies = [
+            dep for dep in direct_dependencies if dep in package_names_in_registry and not dep in ignore_packages
+        ]
+        if service_name in direct_registry_dependencies:
+            direct_registry_dependencies.remove(service_name)
+        dep_mapping[service_name] = direct_registry_dependencies
     dep_mapping = {k: v for k, v in dep_mapping.items() if dep_is_in_mapping(dep_mapping, k)}
     typer.echo(json.dumps(dep_mapping, indent=4, ensure_ascii=False))
     return dep_mapping
@@ -72,24 +92,14 @@ def dep_is_in_mapping(dep_mapping: dict[str, list[str]], searched_service: str):
 
 
 def get_service_name(pyproject: dict) -> str:
-    service_name = "-".join(pyproject["tool"]["poetry"]["name"].split("-")[:-1]).strip()
+    service_name = "-".join(pyproject["tool"]["poetry"]["name"].replace("_", "-").split("-")[:-1]).strip()
     if service_name in REPLACEMENTS:
         return REPLACEMENTS[service_name]
     return service_name
 
 
 def get_direct_dependencies(pyproject):
-    direct_dependencies = {
-        k: v
-        for k, v in pyproject["tool"]["poetry"]["dependencies"].items()
-        if isinstance(v, dict) and v.get("source") == "monite"
-    }
-
-    direct_dependencies = list(direct_dependencies.keys())
-
-    if "monite" in direct_dependencies:
-        direct_dependencies.remove("monite")
-    return direct_dependencies
+    return [dep.replace("_", "-") for dep in pyproject["tool"]["poetry"]["dependencies"].keys()]
 
 
 def get_pyproject_tomls(projects: list):
