@@ -171,22 +171,23 @@ def no_whitespace(value: str) -> str:
 
 @set_app.command("gitlab_api_token")
 def set_gitlab_api_token(
-        welcome_prompt: str = typer.Option(
-            default="Please press enter to continue",
-            prompt="Before proceed you should get the API token here: "
-                   "https://gitlab.monite.com/-/profile/personal_access_tokens. Use the 'api' scope. \n"
-                   "DOCS: https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html\n",
-        ),
-        token_name: str = typer.Option(
-            default=None,
-            prompt="Please enter your gitlab api token name",
-            callback=no_whitespace,
-        ),
-        token: str = typer.Option(
-            default=None,
-            prompt="Please enter your token",
-            callback=no_whitespace,
-        ),
+    welcome_prompt: str = typer.Option(
+        default="Please press enter to continue",
+        prompt="Before proceed you should get the API token here: "
+        "https://gitlab.monite.com/-/profile/personal_access_tokens. Use the 'api' scope. \n"
+        "DOCS: https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html\n",
+        hidden=True,
+    ),
+    token_name: str = typer.Option(
+        ...,
+        prompt="Please enter your gitlab api token name",
+        callback=no_whitespace,
+    ),
+    token: str = typer.Option(
+        ...,
+        prompt="Please enter your token",
+        callback=no_whitespace,
+    ),
 ) -> None:
     """Set the gitlab api token name for setting up local services"""
     CONFIG["gitlab_api_token_name"] = token_name
