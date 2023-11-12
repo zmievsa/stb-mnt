@@ -4,7 +4,7 @@ from typing import Any, List
 
 import tomli as toml
 import typer
-from pysh import sh, which
+from pysh import which
 
 from stb.config import CONFIG
 from stb.utils.common import sh_with_log

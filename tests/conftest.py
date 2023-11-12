@@ -1,5 +1,4 @@
 import contextlib
-import functools
 import shutil
 from pathlib import Path
 
